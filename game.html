@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Game of pig</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="css/freelancer.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+<style>
+        body {
+            text-align: center;
+        }
+        
+        #dice {
+            font-size: 160px;
+        }
+        
+        #dice:hover {
+            cursor: pointer;
+        }
+        
+        canvas {
+           /* background-image:url("game_pigdice/image/bg.png"); */
+           background: slategray;
+        }
+        
+       
+        
+        div.panel {
+            
+            margin: 1em auto;
+            text-align: left;
+        }
+        
+        div h1 {
+            text-align: center;
+        }
+    </style>
+    <script>
+        var canvas;
+        var g; //for draw graphics
+        var stopped = true;
+        var player1 = 0;
+        var player2 = 1;
+        
+        var totaldice1_temp =0; //玩家1每回合暫存的分數總合
+        var totaldice1_temp2 =0; //玩家1按下STOP後先記住這回合目前的分數
+        var totaldice1_final =0;//玩家1每回合最終分數
+
+        var totaldice2_temp =0;//玩家2每回合暫存的分數總合
+        var totaldice2_temp2 =0;//玩家2按下STOP後先記住這回合目前的分數
+        var totaldice2_final =0;//玩家2每回合最終分數
+        var turndice1 =0;//玩家1每次骰到的數字
+        var turndice2 =0;//玩家2每次骰到的數字
+        
+
+        function myrefresh()
+            {
+                window.location.reload();
+            }
+
+        window.onload = function () {
+
+            canvas = document.getElementById("game");
+            g = canvas.getContext("2d");
+            dice = document.getElementById("dice");
+            ui();
+
+        }
+
+        var dice;
+        var dices = ['&#9856;', '&#9857;', '&#9858;', '&#9859;', '&#9860;', '&#9861;']; //骰子圖形六面
+
+
+        function myrefresh() { 
+                 window.location.reload(); 
+            }
+
+        function startgame(){  //重新遊戲
+
+                setTimeout('myrefresh()',500); 
+
+        }
+
+        function roll() {  
+                
+
+                if (player1==0 && player2 ==1)  {   //玩家1回合的條件 當player1==0 && player2 ==1時是玩家1的回合
+                        player1=5;
+                        roll_start1();
+
+                }   
+                else if (player1==3 && player2==1) { //玩家2回合的條件 當player1==3 && player2==1時是玩家2的回合
+                        player2=5;
+                        roll_start2();
+
+                }
+                
+                
+            }
+
+
+         function roll_start1() {  //控制骰子點數產生與停止
+            if (stopped) {
+                stopped = false; //把原本的stopped = true設為false
+                t = setInterval(player1_trun, 100); //定時每隔0.1秒 可以重複執行change函數 骰子點數開始產生
+                setTimeout(roll_start1, 1500); //骰出點數時間為1.5秒  用stopped=false的狀態下再跑一次stopstart函數 因此執行else部分
+                 
+                
+            } else {
+                clearInterval(t); //清除setInterval的定時器 骰子點數產生停止
+                stopped = true;  //stopped 變成原本設定值true
+                
+            }
+        }
+
+
+        function roll_start2() {  //控制骰子點數產生與停止
+            if (stopped) {
+                stopped = false; //把原本的stopped = true設為false
+                t = setInterval(player2_trun, 100); //定時每隔0.1秒 可以重複執行change函數 骰子點數開始產生
+                setTimeout(roll_start2, 1500); //骰出點數時間為1.5秒  用stopped=false的狀態下再跑一次stopstart函數 因此執行else部分
+                 
+                
+            } else {
+                clearInterval(t); //清除setInterval的定時器 骰子點數產生停止
+                stopped = true;  //stopped 變成原本設定值true
+                
+            }
+        }
+
+
+        function player1_trun() {  //玩家1骰骰子
+            if( player1==5 ){
+                var random1 = Math.floor(Math.random() *6  );  //random原本是0~0.9999...  這邊使亂數變成floor整數
+                dice.innerHTML = dices[random1]; //把出來的亂數印在網頁上
+                turndice1 = random1 + 1; //random出來的骰子點數+1 除掉0  
+                g.fillStyle="#E6E6FA";
+                g.font = "20pt arial"; //畫布上紅色骰子數 大小.字型
+                g.fillRect(0, 0, 60, 60); //畫布上紅色骰子數xy位置 黑底長寬
+                g.strokeStyle = "#FF6347";
+               
+               
+                if  (turndice1 != 1)  //當骰到的不是1
+                {
+                    
+                    totaldice1_temp += turndice1; //將骰到的數加到這回合的分數上
+                    totaldice1_final = totaldice1_temp;  //每回合最終得到的分數
+                    g.strokeText(totaldice1_final,20 ,40);
+                     player1=0; //繼續執行roll
+                     player2=1;
+                    
+                    
+                            if (totaldice1_final>=100)  //若最後總分大於100就贏了
+                            {
+                                g.strokeText(totaldice1_final,20 ,40);
+                                setTimeout("alert('score>100,you win!!')", 800 );
+                                player1=4; //停止不能按roll了
+                                player2=4;
+                                
+                                
+                            }
+                
+                }
+
+                else {   //若骰到的數字是1 此回合骰到的分數都不算
+                      
+                     alert("你骰到1了，這回合分數不算");
+                     g.strokeText(totaldice1_temp2,20 ,40);  //將數字歸到上次按STOP後 記的變數
+                     totaldice1_temp=totaldice1_temp2;  //每回合分數再由上回合總分開始加
+                     
+                     player1=3; //將玩家1改成玩家2開始的條件
+                     player2=1;
+                     
+                     
+                    
+                     
+                }
+
+            }
+            
+           
+        }
+
+       function player2_trun() {  //玩家2骰骰子
+            if(player2==5 ){
+                var random = Math.floor(Math.random() *6  );  //random原本是0~0.9999...  這邊使亂數變成floor整數
+                dice.innerHTML = dices[random]; //把出來的亂數印在網頁上
+                turndice2 = random + 1; //random出來的骰子點數+1 除掉0  
+                g.font = "20pt arial"; //畫布上紅色骰子數 大小.字型
+                g.fillStyle="#E6E6FA";
+                g.fillRect(340, 0, 60, 60); //畫布上紅色骰子數xy位置 黑底長寬
+                g.strokeStyle = "#FF6347";
+               
+                
+                if  (turndice2 != 1)
+                {
+                    totaldice2_temp += turndice2;
+                    totaldice2_final = totaldice2_temp;
+                    g.strokeText(totaldice2_final,360 ,40);
+                    player1=3;
+                    player2=1;
+                   
+
+                            if (totaldice2_final>=100)
+                            {
+                                g.strokeText(totaldice2_final,20 ,40);
+                                setTimeout("alert('score>100,you win!!')", 800 );
+                                player1=4;
+                                player2=4;
+
+                            }
+                
+                }
+                else {
+                    
+                     alert("你骰到1了，這回合分數不算");
+                     g.strokeText(totaldice2_temp2,360 ,40);
+                     totaldice2_temp=totaldice2_temp2;
+                     player1=0;
+                     player2=1;
+                     
+                }
+
+            }
+
+                 
+        }
+
+       
+        function stop (){   //玩家決定停止骰骰子 ，換另一位玩家
+
+              if (player1==0 && player2 ==1)  {  //player1時按 要啟動player2條件
+              
+                totaldice1_temp2=totaldice1_final;  //將目前總分記住
+                player1=3;
+                player2=1;
+                alert("player1 stop");
+               
+                
+                
+
+           }   
+              else if (player1==3 && player2==1) { //player2時按 要啟動player1條件
+               
+                totaldice2_temp2=totaldice2_final;
+                player1=0;
+                player2=1;
+                alert("player2 stop");
+                
+               
+           }
+
+
+        }
+
+       
+
+    </script>
+   
+</head>
+
+<body id="page-top" class="index">
+
+
+<div id="skipnav"><a href="#maincontent">Skip to main content</a></div>
+
+    <!-- Navigation -->
+    <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="#page-top">Start Game</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="index.html">Home</a>
+                    </li>
+                   
+                    <li class="page-scroll">
+                        <a href="game.html">Game</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <div class="container" id="maincontent" tabindex="-1">
+            <div class="row">
+                <div class="col-lg-12">
+                    <img class="img-responsive" src="img/pig.jpg">
+                    
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- rule Section -->
+    <section id="rule">
+        <div class="container">
+            <div class="row">
+                
+
+                <canvas id="game" width="400" height="300">
+                    The browser does not support canvas
+                </canvas>
+
+                <div id="dice" onclick="roll()"></div> 
+                
+                <button  class="btn btn-primary active" onclick="stop()">STOP</button>
+                <button class="btn btn-success active" onclick="roll()">ROLL</button>
+                <button  class="btn btn-danger active" onclick="startgame()">START/AGAIN</button>
+                            
+            </div>
+        </div>
+    </section>
+
+    
+   
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll hidden-sm hidden-xs hidden-lg hidden-md">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    <!-- Portfolio Modals -->
+    <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/cabin.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/cake.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/circus.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/game.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/safe.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+                        <div class="modal-body">
+                            <h2>Project Title</h2>
+                            <hr class="star-primary">
+                            <img src="img/portfolio/submarine.png" class="img-responsive img-centered" alt="">
+                            <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
+                            <ul class="list-inline item-details">
+                                <li>Client:
+                                    <strong><a href="http://startbootstrap.com">Start Bootstrap</a>
+                                    </strong>
+                                </li>
+                                <li>Date:
+                                    <strong><a href="http://startbootstrap.com">April 2014</a>
+                                    </strong>
+                                </li>
+                                <li>Service:
+                                    <strong><a href="http://startbootstrap.com">Web Development</a>
+                                    </strong>
+                                </li>
+                            </ul>
+                            <button id="btnSubmit" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <!-- Contact Form JavaScript -->
+    <script src="js/jqBootstrapValidation.js"></script>
+    <script src="js/contact_me.js"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="js/freelancer.min.js"></script>
+
+</body>
+
+</html>
